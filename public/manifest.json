@@ -3,7 +3,7 @@
   "name": "Product Comparison Extension",
   "version": "1.0",
   "description": "Shows similar products from other vendors in your location",
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "sidePanel"],
   "action": {
     "default_icon": {
       "16": "favicon.ico",
