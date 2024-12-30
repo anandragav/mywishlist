@@ -16,6 +16,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { useSidebar } from "./context"
 
 const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
