@@ -20,14 +20,42 @@ async function isProductPage(tabId) {
         const hasProductImage = !!document.querySelector('[itemprop="image"], img[class*="product" i]');
         
         // Check URL for common product page patterns
-        const urlIndicators = ['/product/', '/item/', '/p/', 'pid=', 'product_id='];
-        const hasProductUrl = urlIndicators.some(indicator => window.location.href.includes(indicator));
+        const urlIndicators = [
+          '/product/', 
+          '/item/', 
+          '/p/', 
+          'pid=', 
+          'product_id=',
+          '/buy/',
+          '/goods/',
+          'sku=',
+          'item_id=',
+          '/dp/'  // Amazon-style product URLs
+        ];
+        
+        // Check URL for common catalog page patterns (negative indicators)
+        const catalogIndicators = [
+          '/category/',
+          '/collection/',
+          '/catalog/',
+          '/shop/',
+          '/products/',
+          '/search',
+          'category_id=',
+          '/list/',
+          '/browse/'
+        ];
+        
+        const url = window.location.href.toLowerCase();
+        const hasProductUrl = urlIndicators.some(indicator => url.includes(indicator));
+        const hasCatalogUrl = catalogIndicators.some(indicator => url.includes(indicator));
         
         // Consider it a product page if it has most of these indicators
+        // and doesn't match catalog patterns
         const indicators = [hasPrice, hasAddToCart, hasProductTitle, hasProductImage, hasProductUrl];
         const score = indicators.filter(Boolean).length;
         
-        return score >= 3; // Require at least 3 indicators to consider it a product page
+        return score >= 3 && !hasCatalogUrl; // Require at least 3 indicators and not a catalog URL
       }
     });
     return result;
