@@ -12,7 +12,7 @@ import {
 const mockProducts = [
   {
     id: 1,
-    name: "Wireless Headphones",
+    name: "MALM Desk",
     price: 99.99,
     vendor: "TechStore",
     distance: 1.2,
@@ -20,17 +20,17 @@ const mockProducts = [
   },
   {
     id: 2,
-    name: "Bluetooth Speaker",
+    name: "ALEX Drawer unit",
     price: 79.99,
-    vendor: "AudioWorld",
+    vendor: "FurnitureWorld",
     distance: 2.5,
     imageUrl: "/placeholder.svg",
   },
   {
     id: 3,
-    name: "Smart Watch",
+    name: "MARKUS Office chair",
     price: 199.99,
-    vendor: "GadgetZone",
+    vendor: "OfficeZone",
     distance: 0.8,
     imageUrl: "/placeholder.svg",
   },
@@ -48,17 +48,17 @@ const ProductGrid = () => {
   });
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex items-center justify-between mb-6">
+    <div className="p-4 max-w-lg mx-auto">
+      <div className="flex items-center justify-between mb-4 gap-2">
         <Button 
           variant={isEnabled ? "default" : "secondary"}
           onClick={() => setIsEnabled(!isEnabled)}
-          className="w-32"
+          className="w-24 text-sm"
         >
           {isEnabled ? "Enabled" : "Disabled"}
         </Button>
         <Select value={sortOrder} onValueChange={setSortOrder}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-[140px] text-sm">
             <SelectValue placeholder="Sort by price" />
           </SelectTrigger>
           <SelectContent>
@@ -69,7 +69,7 @@ const ProductGrid = () => {
       </div>
       
       {isEnabled ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 gap-4">
           {sortedProducts.map((product) => (
             <ProductCard key={product.id} {...product} />
           ))}
