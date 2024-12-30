@@ -7,8 +7,13 @@
     "activeTab",
     "bookmarks",
     "sidePanel",
-    "scripting"
+    "scripting",
+    "contextMenus"
   ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
   "action": {
     "default_icon": {
       "16": "favicon.ico",
