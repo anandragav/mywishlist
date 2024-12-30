@@ -1,8 +1,18 @@
 import { Sidebar, SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
 import ProductGrid from "@/components/ProductGrid";
 import { motion } from "framer-motion";
+import { ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
+  const openInNewTab = () => {
+    if (typeof chrome !== 'undefined' && chrome.runtime) {
+      chrome.runtime.getURL('index.html').then(url => {
+        window.open(url, '_blank');
+      });
+    }
+  };
+
   return (
     <>
       <Sidebar side="right" variant="floating" className="group-data-[state=expanded]:!w-[75vw]">
@@ -21,7 +31,18 @@ const Index = () => {
                     Your bookmarked products from across the web
                   </p>
                 </div>
-                <SidebarTrigger />
+                <div className="flex gap-2 items-center">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={openInNewTab}
+                    className="flex items-center gap-2"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Open in Tab
+                  </Button>
+                  <SidebarTrigger />
+                </div>
               </div>
             </header>
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">

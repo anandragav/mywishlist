@@ -55,7 +55,7 @@ async function isProductPage(tabId) {
         const indicators = [hasPrice, hasAddToCart, hasProductTitle, hasProductImage, hasProductUrl];
         const score = indicators.filter(Boolean).length;
         
-        return score >= 3 && !hasCatalogUrl; // Require at least 3 indicators and not a catalog URL
+        return score >= 3 && !hasCatalogUrl;
       }
     });
     return result;
@@ -115,8 +115,16 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         url: result.url
       });
 
-      // Open the side panel to show the updated wishlist
-      await chrome.sidePanel.open();
+      // Open the side panel
+      try {
+        await chrome.sidePanel.setOptions({
+          enabled: true,
+          path: "index.html"
+        });
+        await chrome.sidePanel.open();
+      } catch (error) {
+        console.error('Error opening side panel:', error);
+      }
 
     } catch (error) {
       console.error('Error adding item to wishlist:', error);
@@ -126,5 +134,13 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
 // Open side panel when extension icon is clicked
 chrome.action.onClicked.addListener(async () => {
-  await chrome.sidePanel.open();
+  try {
+    await chrome.sidePanel.setOptions({
+      enabled: true,
+      path: "index.html"
+    });
+    await chrome.sidePanel.open();
+  } catch (error) {
+    console.error('Error opening side panel:', error);
+  }
 });
