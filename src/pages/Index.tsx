@@ -1,12 +1,18 @@
 import { Sidebar, SidebarContent, SidebarTrigger } from "@/components/ui/sidebar";
 import ProductGrid from "@/components/ProductGrid";
+import { motion } from "framer-motion";
 
 const Index = () => {
   return (
     <>
       <Sidebar side="right" variant="floating" className="group-data-[state=expanded]:!w-[75vw]">
         <SidebarContent>
-          <div className="min-h-screen bg-gray-50">
+          <motion.div 
+            className="min-h-screen bg-gray-50"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.3 }}
+          >
             <header className="bg-white shadow-sm">
               <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                 <div>
@@ -21,7 +27,7 @@ const Index = () => {
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
               <ProductGrid />
             </main>
-          </div>
+          </motion.div>
         </SidebarContent>
       </Sidebar>
     </>
