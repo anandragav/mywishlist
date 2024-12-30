@@ -7,6 +7,46 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
+// Function to check if current page is likely a product page
+async function isProductPage(tabId) {
+  try {
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        // Check for common product page indicators
+        const hasPrice = !!document.querySelector('[itemprop="price"], .price, [class*="price" i], [data-price]');
+        const hasAddToCart = !!document.querySelector('button[contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "cart")], [class*="add-to-cart" i], [id*="add-to-cart" i]');
+        const hasProductTitle = !!document.querySelector('[itemprop="name"], h1');
+        const hasProductImage = !!document.querySelector('[itemprop="image"], img[class*="product" i]');
+        
+        // Check URL for common product page patterns
+        const urlIndicators = ['/product/', '/item/', '/p/', 'pid=', 'product_id='];
+        const hasProductUrl = urlIndicators.some(indicator => window.location.href.includes(indicator));
+        
+        // Consider it a product page if it has most of these indicators
+        const indicators = [hasPrice, hasAddToCart, hasProductTitle, hasProductImage, hasProductUrl];
+        const score = indicators.filter(Boolean).length;
+        
+        return score >= 3; // Require at least 3 indicators to consider it a product page
+      }
+    });
+    return result;
+  } catch (error) {
+    console.error('Error checking if product page:', error);
+    return false;
+  }
+}
+
+// Update context menu visibility based on page type
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete') {
+    const isProduct = await isProductPage(tabId);
+    chrome.contextMenus.update("addToWishlist", {
+      visible: isProduct
+    });
+  }
+});
+
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === "addToWishlist") {
