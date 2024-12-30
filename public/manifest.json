@@ -1,9 +1,14 @@
 {
   "manifest_version": 3,
-  "name": "Product Comparison Extension",
+  "name": "Universal Shopping Wishlist",
   "version": "1.0",
-  "description": "Shows similar products from other vendors in your location",
-  "permissions": ["activeTab", "sidePanel"],
+  "description": "Save products from any shopping site to a unified wishlist in your browser bookmarks",
+  "permissions": [
+    "activeTab",
+    "bookmarks",
+    "sidePanel",
+    "scripting"
+  ],
   "action": {
     "default_icon": {
       "16": "favicon.ico",

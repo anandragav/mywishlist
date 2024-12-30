@@ -1,15 +1,17 @@
 import { Card } from "@/components/ui/card";
-import { MapPin } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trash2, ExternalLink } from "lucide-react";
 
 interface ProductCardProps {
   name: string;
   price: number;
   vendor: string;
-  distance: number;
   imageUrl: string;
+  url: string;
+  onRemove: () => void;
 }
 
-const ProductCard = ({ name, price, vendor, distance, imageUrl }: ProductCardProps) => {
+const ProductCard = ({ name, price, vendor, imageUrl, url, onRemove }: ProductCardProps) => {
   return (
     <Card className="overflow-hidden animate-fade-in hover:shadow-lg transition-shadow">
       <div className="flex gap-4 p-4">
@@ -22,13 +24,29 @@ const ProductCard = ({ name, price, vendor, distance, imageUrl }: ProductCardPro
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-base truncate">{name}</h3>
-          <p className="text-primary font-bold text-lg">${price.toFixed(2)}</p>
-          <div className="flex items-center justify-between mt-2 text-sm text-gray-600">
-            <span className="truncate">{vendor}</span>
-            <div className="flex items-center gap-1 flex-shrink-0">
-              <MapPin size={14} />
-              <span>{distance.toFixed(1)} mi</span>
-            </div>
+          <p className="text-primary font-bold text-lg">
+            {typeof price === 'number' ? `$${price.toFixed(2)}` : 'Price unavailable'}
+          </p>
+          <p className="text-sm text-gray-600 truncate">{vendor}</p>
+          <div className="flex gap-2 mt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open(url, '_blank')}
+              className="flex items-center gap-1"
+            >
+              <ExternalLink size={14} />
+              Visit
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={onRemove}
+              className="flex items-center gap-1"
+            >
+              <Trash2 size={14} />
+              Remove
+            </Button>
           </div>
         </div>
       </div>

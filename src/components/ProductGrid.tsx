@@ -1,84 +1,78 @@
 import { useState } from "react";
 import ProductCard from "./ProductCard";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-const mockProducts = [
-  {
-    id: 1,
-    name: "MALM Desk",
-    price: 99.99,
-    vendor: "TechStore",
-    distance: 1.2,
-    imageUrl: "/placeholder.svg",
-  },
-  {
-    id: 2,
-    name: "ALEX Drawer unit",
-    price: 79.99,
-    vendor: "FurnitureWorld",
-    distance: 2.5,
-    imageUrl: "/placeholder.svg",
-  },
-  {
-    id: 3,
-    name: "MARKUS Office chair",
-    price: 199.99,
-    vendor: "OfficeZone",
-    distance: 0.8,
-    imageUrl: "/placeholder.svg",
-  },
-];
+import { useWishlist } from "@/hooks/useWishlist";
+import { Loader2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const ProductGrid = () => {
-  const [sortOrder, setSortOrder] = useState("price-low");
   const [isEnabled, setIsEnabled] = useState(true);
+  const { items, loading, error, removeFromWishlist } = useWishlist();
+  const { toast } = useToast();
 
-  const sortedProducts = [...mockProducts].sort((a, b) => {
-    if (sortOrder === "price-low") {
-      return a.price - b.price;
+  const handleRemove = async (itemId: string) => {
+    try {
+      await removeFromWishlist(itemId);
+      toast({
+        title: "Item removed",
+        description: "Product has been removed from your wishlist",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to remove item from wishlist",
+        variant: "destructive",
+      });
     }
-    return b.price - a.price;
-  });
+  };
+
+  if (!isEnabled) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        Enable the extension to see your wishlist
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12 text-red-500">
+        Error loading wishlist: {error}
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-500">
+        Your wishlist is empty. Browse products and click the bookmark button to add them here!
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 max-w-lg mx-auto">
-      <div className="flex items-center justify-between mb-4 gap-2">
-        <Button 
-          variant={isEnabled ? "default" : "secondary"}
-          onClick={() => setIsEnabled(!isEnabled)}
-          className="w-24 text-sm"
-        >
-          {isEnabled ? "Enabled" : "Disabled"}
-        </Button>
-        <Select value={sortOrder} onValueChange={setSortOrder}>
-          <SelectTrigger className="w-[140px] text-sm">
-            <SelectValue placeholder="Sort by price" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="price-low">Price: Low to High</SelectItem>
-            <SelectItem value="price-high">Price: High to Low</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 gap-4">
+        {items.map((item) => (
+          <ProductCard
+            key={item.id}
+            name={item.title}
+            price={parseFloat(item.price || "0")}
+            vendor={item.vendor || "Unknown Store"}
+            imageUrl={item.imageUrl || "/placeholder.svg"}
+            onRemove={() => handleRemove(item.id)}
+            url={item.url}
+          />
+        ))}
       </div>
-      
-      {isEnabled ? (
-        <div className="grid grid-cols-1 gap-4">
-          {sortedProducts.map((product) => (
-            <ProductCard key={product.id} {...product} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12 text-gray-500">
-          Enable the extension to see similar products
-        </div>
-      )}
     </div>
   );
 };
