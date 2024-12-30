@@ -15,7 +15,7 @@ export const useWishlist = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const FOLDER_NAME = "Shopping Wishlist";
+  const STORAGE_KEY = "shopping-wishlist";
 
   useEffect(() => {
     loadWishlist();
@@ -23,36 +23,8 @@ export const useWishlist = () => {
 
   const loadWishlist = async () => {
     try {
-      // Ensure the wishlist folder exists
-      let wishlistFolder = await chrome.bookmarks.search({ title: FOLDER_NAME });
-      
-      if (!wishlistFolder.length) {
-        wishlistFolder = [await chrome.bookmarks.create({ title: FOLDER_NAME })];
-      }
-
-      const bookmarks = await chrome.bookmarks.getChildren(wishlistFolder[0].id);
-      const wishlistItems = bookmarks.map(bookmark => {
-        try {
-          const metadata = JSON.parse(bookmark.title);
-          return {
-            id: bookmark.id,
-            title: metadata.title || bookmark.title,
-            url: bookmark.url || '',
-            price: metadata.price,
-            imageUrl: metadata.imageUrl,
-            vendor: metadata.vendor,
-            dateAdded: bookmark.dateAdded
-          };
-        } catch {
-          return {
-            id: bookmark.id,
-            title: bookmark.title,
-            url: bookmark.url || '',
-            dateAdded: bookmark.dateAdded
-          };
-        }
-      });
-
+      const storedItems = localStorage.getItem(STORAGE_KEY);
+      const wishlistItems = storedItems ? JSON.parse(storedItems) : [];
       setItems(wishlistItems);
       setLoading(false);
     } catch (err) {
@@ -64,23 +36,15 @@ export const useWishlist = () => {
 
   const addToWishlist = async (item: Omit<WishlistItem, 'id' | 'dateAdded'>) => {
     try {
-      const folders = await chrome.bookmarks.search({ title: FOLDER_NAME });
-      const folderId = folders[0].id;
-
-      const metadata = {
-        title: item.title,
-        price: item.price,
-        imageUrl: item.imageUrl,
-        vendor: item.vendor
+      const newItem: WishlistItem = {
+        ...item,
+        id: crypto.randomUUID(),
+        dateAdded: Date.now()
       };
-
-      await chrome.bookmarks.create({
-        parentId: folderId,
-        title: JSON.stringify(metadata),
-        url: item.url
-      });
-
-      await loadWishlist();
+      
+      const updatedItems = [...items, newItem];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedItems));
+      setItems(updatedItems);
     } catch (err) {
       console.error('Error adding to wishlist:', err);
       setError('Failed to add item to wishlist');
@@ -89,8 +53,9 @@ export const useWishlist = () => {
 
   const removeFromWishlist = async (itemId: string) => {
     try {
-      await chrome.bookmarks.remove(itemId);
-      await loadWishlist();
+      const updatedItems = items.filter(item => item.id !== itemId);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedItems));
+      setItems(updatedItems);
     } catch (err) {
       console.error('Error removing from wishlist:', err);
       setError('Failed to remove item from wishlist');
