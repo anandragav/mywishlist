@@ -12,9 +12,17 @@ export interface SidebarContext {
   toggleSidebar: () => void
 }
 
-export interface SidebarProviderProps extends React.HTMLAttributes<HTMLDivElement> {
+export interface SidebarProviderProps {
   defaultOpen?: boolean
   open?: boolean
   onOpenChange?: (open: boolean) => void
   children: ReactNode
+}
+
+export interface SidebarProps {
+  side?: "left" | "right"
+  variant?: "sidebar" | "floating" | "inset"
+  collapsible?: "offcanvas" | "icon" | "none"
+  className?: string
+  children?: ReactNode
 }

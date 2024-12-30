@@ -1,12 +1,10 @@
 import * as React from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Sheet, SheetContent } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
-import { SidebarProps } from "./types"
+import { Sheet, SheetContent } from "@/components/ui/sheet"
+import type { SidebarProps } from "./types"
 import { useSidebar } from "./context"
-import { SIDEBAR_WIDTH, SIDEBAR_WIDTH_MOBILE } from "./context"
 
-export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
+const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
   (
     {
       side = "left",
@@ -42,18 +40,14 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
             data-sidebar="sidebar"
             data-mobile="true"
             className="w-[--sidebar-width] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
-            style={{ "--sidebar-width": SIDEBAR_WIDTH_MOBILE } as React.CSSProperties}
+            style={
+              {
+                "--sidebar-width": "18rem",
+              } as React.CSSProperties
+            }
             side={side}
           >
-            <motion.div 
-              className="flex h-full w-full flex-col"
-              initial={{ x: side === "left" ? "-100%" : "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: side === "left" ? "-100%" : "100%" }}
-              transition={{ type: "spring", damping: 20, stiffness: 300 }}
-            >
-              {children}
-            </motion.div>
+            <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>
         </Sheet>
       )
@@ -68,7 +62,7 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
         data-variant={variant}
         data-side={side}
       >
-        <motion.div
+        <div
           className={cn(
             "duration-200 relative h-svh w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
             "group-data-[collapsible=offcanvas]:w-0",
@@ -77,17 +71,8 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
               ? "group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
           )}
-          initial={false}
-          animate={{
-            width: state === "expanded" ? "var(--sidebar-width)" : "var(--sidebar-width-icon)",
-          }}
-          transition={{
-            type: "spring",
-            damping: 20,
-            stiffness: 300,
-          }}
         />
-        <motion.div
+        <div
           className={cn(
             "duration-200 fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] ease-linear md:flex",
             side === "left"
@@ -98,16 +83,6 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
               : "group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l",
             className
           )}
-          initial={false}
-          animate={{
-            width: state === "expanded" ? "var(--sidebar-width)" : "var(--sidebar-width-icon)",
-            [side]: state === "expanded" ? 0 : `calc(var(--sidebar-width) * -1)`,
-          }}
-          transition={{
-            type: "spring",
-            damping: 20,
-            stiffness: 300,
-          }}
           {...props}
         >
           <div
@@ -116,9 +91,11 @@ export const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>(
           >
             {children}
           </div>
-        </motion.div>
+        </div>
       </div>
     )
   }
 )
 Sidebar.displayName = "Sidebar"
+
+export { Sidebar }
