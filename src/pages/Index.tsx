@@ -2,6 +2,8 @@ import { Sidebar, SidebarContent } from "@/components/ui/sidebar";
 import ProductGrid from "@/components/ProductGrid";
 
 const Index = () => {
+  console.log('Index component rendering...');
+  
   return (
     <Sidebar side="right" variant="floating">
       <SidebarContent>
