@@ -12,13 +12,8 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 // Handle extension icon clicks
-chrome.action.onClicked.addListener(async () => {
-  try {
-    const url = chrome.runtime.getURL('index.html');
-    await chrome.tabs.create({ url });
-  } catch (error) {
-    console.error('Error opening wishlist:', error);
-  }
+chrome.action.onClicked.addListener(() => {
+  chrome.tabs.create({ url: "index.html" });
 });
 
 // Function to check if current page is likely a product page
@@ -69,10 +64,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       await addToWishlist(result.productInfo);
 
       // Open wishlist in new tab with success message
-      const url = chrome.runtime.getURL('index.html') + 
-                  `?status=added&title=${encodeURIComponent(result.productInfo.title)}`;
-      
-      await chrome.tabs.create({ url });
+      chrome.tabs.create({ 
+        url: `index.html?status=added&title=${encodeURIComponent(result.productInfo.title)}`
+      });
     } catch (error) {
       console.error('Error adding to wishlist:', error);
     }
