@@ -6,14 +6,14 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "addToWishlist",
     title: "Add to Wishlist",
-    contexts: ["page"],
-    visible: false
+    contexts: ["page"]
   });
 });
 
 // Handle extension icon clicks
 chrome.action.onClicked.addListener(() => {
-  chrome.tabs.create({ url: "index.html" });
+  const url = chrome.runtime.getURL('index.html');
+  chrome.tabs.create({ url });
 });
 
 // Function to check if current page is likely a product page
@@ -31,7 +31,7 @@ async function isProductPage(tabId) {
       func: extractProductInfo
     });
 
-    return result.isProductPage || false;
+    return result.isProductPage;
   } catch (error) {
     console.error('Error checking if product page:', error);
     return false;
@@ -64,9 +64,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       await addToWishlist(result.productInfo);
 
       // Open wishlist in new tab with success message
-      chrome.tabs.create({ 
-        url: `index.html?status=added&title=${encodeURIComponent(result.productInfo.title)}`
-      });
+      const url = chrome.runtime.getURL('index.html') + 
+        `?status=added&title=${encodeURIComponent(result.productInfo.title)}`;
+      chrome.tabs.create({ url });
     } catch (error) {
       console.error('Error adding to wishlist:', error);
     }
