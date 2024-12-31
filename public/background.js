@@ -117,10 +117,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
       // Open the side panel and show success message
       try {
+        const extensionUrl = chrome.runtime.getURL('index.html');
         // First set the options
         await chrome.sidePanel.setOptions({
           enabled: true,
-          path: "index.html?status=added&title=" + encodeURIComponent(result.title)
+          path: `index.html?status=added&title=${encodeURIComponent(result.title)}`
         });
         
         // Then open the panel without any parameters
@@ -140,9 +141,10 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 // Open side panel when extension icon is clicked
 chrome.action.onClicked.addListener(async () => {
   try {
+    const extensionUrl = chrome.runtime.getURL('index.html');
     await chrome.sidePanel.setOptions({
       enabled: true,
-      path: "index.html"
+      path: 'index.html'
     });
     
     if (chrome.sidePanel && typeof chrome.sidePanel.open === 'function') {
