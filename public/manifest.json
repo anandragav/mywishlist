@@ -8,7 +8,12 @@
     "bookmarks",
     "sidePanel",
     "scripting",
-    "contextMenus"
+    "contextMenus",
+    "tabs"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
   ],
   "background": {
     "service_worker": "background.js",

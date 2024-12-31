@@ -5,6 +5,12 @@ chrome.runtime.onInstalled.addListener(() => {
     title: "Add to Wishlist",
     contexts: ["page", "selection", "link", "image"]
   });
+
+  // Initialize side panel
+  chrome.sidePanel.setOptions({
+    enabled: true,
+    path: 'index.html'
+  });
 });
 
 // Function to check if current page is likely a product page
@@ -115,14 +121,13 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         url: result.url
       });
 
-      // Set up the side panel options first
+      // Set up the side panel options with success message
       await chrome.sidePanel.setOptions({
         enabled: true,
         path: `index.html?status=added&title=${encodeURIComponent(result.title)}`
       });
 
-      // Instead of trying to open the panel programmatically,
-      // we'll update the extension action badge to notify the user
+      // Show notification badge
       chrome.action.setBadgeText({ text: "New" });
       chrome.action.setBadgeBackgroundColor({ color: "#4CAF50" });
       
@@ -137,18 +142,17 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 });
 
-// Open side panel when extension icon is clicked (this is a user gesture)
-chrome.action.onClicked.addListener(async () => {
+// Handle extension icon clicks
+chrome.action.onClicked.addListener(async (tab) => {
   try {
+    // Always ensure the side panel is enabled first
     await chrome.sidePanel.setOptions({
       enabled: true,
       path: 'index.html'
     });
     
-    // This is okay because it's in response to a user click
-    if (chrome.sidePanel && typeof chrome.sidePanel.open === 'function') {
-      await chrome.sidePanel.open({});
-    }
+    // Open the side panel (this is okay because it's in response to a user click)
+    await chrome.sidePanel.open({});
   } catch (error) {
     console.error('Error opening side panel:', error);
   }
