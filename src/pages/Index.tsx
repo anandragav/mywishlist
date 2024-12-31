@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 const Index = () => {
   const openInNewTab = () => {
     if (typeof chrome !== 'undefined' && chrome.runtime) {
-      chrome.runtime.getURL('index.html').then(url => {
-        window.open(url, '_blank');
-      });
+      const url = chrome.runtime.getURL('index.html');
+      window.open(url, '_blank');
     }
   };
 
