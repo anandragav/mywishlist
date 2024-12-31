@@ -25,40 +25,54 @@ export const useWishlist = () => {
           // Search for the wishlist folder
           const folders = await chrome.bookmarks.search({ title: FOLDER_NAME });
           
-          if (folders.length > 0) {
-            const folderId = folders[0].id;
-            // Get all bookmarks in the folder
-            const bookmarks = await chrome.bookmarks.getChildren(folderId);
-            
-            // Transform bookmarks into wishlist items
-            const wishlistItems = bookmarks.map(bookmark => {
-              // Try to parse the extra data stored in the title
-              let extraData = {};
-              try {
-                const titleParts = bookmark.title.split(' | ');
-                if (titleParts.length > 1) {
-                  extraData = JSON.parse(titleParts[1]);
-                }
-              } catch (e) {
-                console.log('Error parsing bookmark extra data:', e);
-              }
-
-              return {
-                id: bookmark.id,
-                title: bookmark.title.split(' | ')[0], // Get the actual title
-                url: bookmark.url || '',
-                imageUrl: (extraData as any)?.imageUrl || '',
-                price: (extraData as any)?.price || '',
-                vendor: (extraData as any)?.vendor || '',
-                dateAdded: bookmark.dateAdded || Date.now(),
-              };
+          let folderId: string;
+          
+          // If folder doesn't exist, create it
+          if (folders.length === 0) {
+            console.log('Creating wishlist folder...');
+            const newFolder = await chrome.bookmarks.create({
+              title: FOLDER_NAME,
+              parentId: "1" // Default to bookmarks bar
             });
-
-            setItems(wishlistItems);
+            folderId = newFolder.id;
           } else {
-            setItems([]);
+            folderId = folders[0].id;
           }
+
+          console.log('Fetching bookmarks from folder:', folderId);
+          
+          // Get all bookmarks in the folder
+          const bookmarks = await chrome.bookmarks.getChildren(folderId);
+          console.log('Found bookmarks:', bookmarks);
+          
+          // Transform bookmarks into wishlist items
+          const wishlistItems = bookmarks.map(bookmark => {
+            // Try to parse the extra data stored in the title
+            let extraData = {};
+            try {
+              const titleParts = bookmark.title.split(' | ');
+              if (titleParts.length > 1) {
+                extraData = JSON.parse(titleParts[1]);
+              }
+            } catch (e) {
+              console.error('Error parsing bookmark extra data:', e);
+            }
+
+            return {
+              id: bookmark.id,
+              title: bookmark.title.split(' | ')[0], // Get the actual title
+              url: bookmark.url || '',
+              imageUrl: (extraData as any)?.imageUrl || '',
+              price: (extraData as any)?.price || '',
+              vendor: (extraData as any)?.vendor || '',
+              dateAdded: bookmark.dateAdded || Date.now(),
+            };
+          });
+
+          console.log('Transformed wishlist items:', wishlistItems);
+          setItems(wishlistItems);
         } else {
+          console.log('Chrome bookmarks API not available, using localStorage fallback');
           // Fallback for development environment
           const storedItems = localStorage.getItem('wishlist');
           setItems(storedItems ? JSON.parse(storedItems) : []);
