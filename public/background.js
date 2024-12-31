@@ -16,6 +16,20 @@ chrome.runtime.onInstalled.addListener(() => {
 // Function to check if current page is likely a product page
 async function isProductPage(tabId) {
   try {
+    // First check if we can access the page
+    const tab = await chrome.tabs.get(tabId);
+    const url = tab.url || '';
+    
+    // Skip checking restricted URLs
+    if (url.startsWith('chrome://') || 
+        url.startsWith('chrome-extension://') || 
+        url.startsWith('about:') ||
+        url.startsWith('edge://') ||
+        url.startsWith('brave://') ||
+        url === '') {
+      return false;
+    }
+
     const [{ result }] = await chrome.scripting.executeScript({
       target: { tabId },
       func: () => {
@@ -67,6 +81,7 @@ async function isProductPage(tabId) {
     return result;
   } catch (error) {
     console.error('Error checking if product page:', error);
+    // Return false instead of throwing error for restricted pages
     return false;
   }
 }
@@ -74,14 +89,21 @@ async function isProductPage(tabId) {
 // Update context menu visibility based on page type
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') {
-    const isProduct = await isProductPage(tabId);
-    chrome.contextMenus.update("addToWishlist", {
-      visible: isProduct
-    });
+    try {
+      const isProduct = await isProductPage(tabId);
+      await chrome.contextMenus.update("addToWishlist", {
+        visible: isProduct
+      });
+    } catch (error) {
+      console.error('Error updating context menu:', error);
+      // Ensure menu is visible by default if there's an error
+      await chrome.contextMenus.update("addToWishlist", {
+        visible: true
+      });
+    }
   }
 });
 
-// Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === "addToWishlist") {
     try {
