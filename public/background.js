@@ -115,11 +115,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         url: result.url
       });
 
-      // Open the side panel
+      // Open the side panel and show success message
       try {
         await chrome.sidePanel.setOptions({
           enabled: true,
-          path: "index.html"
+          path: "index.html?status=added&title=" + encodeURIComponent(result.title)
         });
         await chrome.sidePanel.open();
       } catch (error) {

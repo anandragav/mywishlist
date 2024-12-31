@@ -3,8 +3,27 @@ import ProductGrid from "@/components/ProductGrid";
 import { motion } from "framer-motion";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 const Index = () => {
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    // Check URL parameters for status and title
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get('status');
+    const title = params.get('title');
+    
+    if (status === 'added' && title) {
+      toast({
+        title: "Added to Wishlist",
+        description: `${decodeURIComponent(title)} has been added to your wishlist.`,
+        duration: 3000,
+      });
+    }
+  }, [toast]);
+
   const openInNewTab = () => {
     if (typeof chrome !== 'undefined' && chrome.runtime) {
       const url = chrome.runtime.getURL('index.html');
