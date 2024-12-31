@@ -27,25 +27,37 @@ export const useWishlist = () => {
           
           let folderId: string;
           
-          // If folder doesn't exist, create it in the bookmarks bar
+          // Get the bookmarks bar folder first to ensure it exists
+          const bookmarksBar = await chrome.bookmarks.get("1");
+          console.log('Bookmarks bar:', bookmarksBar);
+          
           if (folders.length === 0) {
+            // Create new folder in bookmarks bar
             console.log('Creating wishlist folder in bookmarks bar...');
             const newFolder = await chrome.bookmarks.create({
               title: FOLDER_NAME,
-              parentId: "1" // "1" is the ID of the bookmarks bar
+              parentId: "1"  // Bookmarks bar ID
             });
+            console.log('Created new folder:', newFolder);
             folderId = newFolder.id;
           } else {
-            // If folder exists but is not in bookmarks bar, move it there
             const folder = folders[0];
+            console.log('Found existing folder:', folder);
+            
+            // If folder exists but is not in bookmarks bar, move it
             if (folder.parentId !== "1") {
-              console.log('Moving wishlist folder to bookmarks bar...');
-              await chrome.bookmarks.move(folder.id, { parentId: "1" });
+              console.log('Moving folder to bookmarks bar from parent:', folder.parentId);
+              const movedFolder = await chrome.bookmarks.move(folder.id, { 
+                parentId: "1" 
+              });
+              console.log('Moved folder:', movedFolder);
+              folderId = movedFolder.id;
+            } else {
+              folderId = folder.id;
             }
-            folderId = folder.id;
           }
 
-          console.log('Fetching bookmarks from folder:', folderId);
+          console.log('Using folder ID:', folderId);
           
           // Get all bookmarks in the folder
           const bookmarks = await chrome.bookmarks.getChildren(folderId);
@@ -53,33 +65,32 @@ export const useWishlist = () => {
           
           // Transform bookmarks into wishlist items
           const wishlistItems = bookmarks.map(bookmark => {
-            // Try to parse the extra data stored in the title
-            let extraData = {};
             try {
-              const titleParts = bookmark.title.split(' | ');
-              if (titleParts.length > 1) {
-                extraData = JSON.parse(titleParts[1]);
-              }
+              const titleData = JSON.parse(bookmark.title);
+              return {
+                id: bookmark.id,
+                title: titleData.title || bookmark.title,
+                url: bookmark.url || '',
+                imageUrl: titleData.imageUrl || '',
+                price: titleData.price || '',
+                vendor: titleData.vendor || '',
+                dateAdded: bookmark.dateAdded || Date.now(),
+              };
             } catch (e) {
-              console.error('Error parsing bookmark extra data:', e);
+              console.log('Error parsing bookmark data:', e);
+              return {
+                id: bookmark.id,
+                title: bookmark.title,
+                url: bookmark.url || '',
+                dateAdded: bookmark.dateAdded || Date.now(),
+              };
             }
-
-            return {
-              id: bookmark.id,
-              title: bookmark.title.split(' | ')[0], // Get the actual title
-              url: bookmark.url || '',
-              imageUrl: (extraData as any)?.imageUrl || '',
-              price: (extraData as any)?.price || '',
-              vendor: (extraData as any)?.vendor || '',
-              dateAdded: bookmark.dateAdded || Date.now(),
-            };
           });
 
           console.log('Transformed wishlist items:', wishlistItems);
           setItems(wishlistItems);
         } else {
           console.log('Chrome bookmarks API not available, using localStorage fallback');
-          // Fallback for development environment
           const storedItems = localStorage.getItem('wishlist');
           setItems(storedItems ? JSON.parse(storedItems) : []);
         }
@@ -98,11 +109,13 @@ export const useWishlist = () => {
       chrome.bookmarks.onCreated.addListener(loadWishlist);
       chrome.bookmarks.onRemoved.addListener(loadWishlist);
       chrome.bookmarks.onChanged.addListener(loadWishlist);
+      chrome.bookmarks.onMoved.addListener(loadWishlist);
 
       return () => {
         chrome.bookmarks.onCreated.removeListener(loadWishlist);
         chrome.bookmarks.onRemoved.removeListener(loadWishlist);
         chrome.bookmarks.onChanged.removeListener(loadWishlist);
+        chrome.bookmarks.onMoved.removeListener(loadWishlist);
       };
     }
   }, []);
