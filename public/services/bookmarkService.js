@@ -1,8 +1,8 @@
 // Bookmark management service
+export const FOLDER_NAME = "Shopping Wishlist";
+
 export const addToWishlist = async (productInfo) => {
   try {
-    const FOLDER_NAME = "Shopping Wishlist";
-    
     // Search for wishlist folder
     const folders = await chrome.bookmarks.search({ title: FOLDER_NAME });
     
@@ -36,5 +36,23 @@ export const addToWishlist = async (productInfo) => {
   } catch (error) {
     console.error('Error adding to wishlist:', error);
     throw error;
+  }
+};
+
+export const getWishlistBookmarks = async () => {
+  try {
+    const folders = await chrome.bookmarks.search({ title: FOLDER_NAME });
+    if (folders.length === 0) {
+      console.log('Shopping Wishlist folder not found.');
+      return [];
+    }
+
+    const wishlistFolder = folders[0];
+    const children = await chrome.bookmarks.getSubTree(wishlistFolder.id);
+
+    return children[0].children || [];
+  } catch (error) {
+    console.error('Error retrieving bookmarks:', error);
+    return [];
   }
 };

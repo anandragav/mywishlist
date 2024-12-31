@@ -1,5 +1,5 @@
 import { isRestrictedUrl, extractProductInfo } from './utils/urlUtils.js';
-import { addToWishlist } from './services/bookmarkService.js';
+import { addToWishlist, getWishlistBookmarks } from './services/bookmarkService.js';
 
 // Create context menu item
 chrome.runtime.onInstalled.addListener(() => {
@@ -9,6 +9,25 @@ chrome.runtime.onInstalled.addListener(() => {
     contexts: ["page"],
     visible: false
   });
+});
+
+// Handle extension icon clicks
+chrome.action.onClicked.addListener(async () => {
+  try {
+    const url = chrome.runtime.getURL('index.html');
+    if (chrome.sidePanel) {
+      await chrome.sidePanel.open({ url });
+    } else {
+      await chrome.windows.create({
+        url,
+        type: 'popup',
+        width: 400,
+        height: 600
+      });
+    }
+  } catch (error) {
+    console.error('Error opening side panel:', error);
+  }
 });
 
 // Function to check if current page is likely a product page
@@ -26,7 +45,7 @@ async function isProductPage(tabId) {
       func: extractProductInfo
     });
 
-    return result.isProductPage;
+    return result.isProductPage || false;
   } catch (error) {
     console.error('Error checking if product page:', error);
     return false;
@@ -43,16 +62,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       });
     } catch (error) {
       console.error('Error updating context menu:', error);
-      await chrome.contextMenus.update("addToWishlist", {
-        visible: true
-      });
     }
   }
 });
 
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-  if (info.menuItemId === "addToWishlist") {
+  if (info.menuItemId === "addToWishlist" && tab?.id) {
     try {
       const [{ result }] = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
@@ -77,27 +93,6 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
       }
     } catch (error) {
       console.error('Error adding to wishlist:', error);
-    }
-  }
-});
-
-// Handle side panel requests
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
-  if (message.action === "openSidePanel") {
-    try {
-      const url = chrome.runtime.getURL('index.html');
-      if (chrome.sidePanel) {
-        await chrome.sidePanel.open({ url });
-      } else {
-        await chrome.windows.create({
-          url,
-          type: 'popup',
-          width: 400,
-          height: 600
-        });
-      }
-    } catch (error) {
-      console.error('Error opening side panel:', error);
     }
   }
 });
