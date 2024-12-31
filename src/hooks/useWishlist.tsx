@@ -27,16 +27,22 @@ export const useWishlist = () => {
           
           let folderId: string;
           
-          // If folder doesn't exist, create it
+          // If folder doesn't exist, create it in the bookmarks bar
           if (folders.length === 0) {
-            console.log('Creating wishlist folder...');
+            console.log('Creating wishlist folder in bookmarks bar...');
             const newFolder = await chrome.bookmarks.create({
               title: FOLDER_NAME,
-              parentId: "1" // Default to bookmarks bar
+              parentId: "1" // "1" is the ID of the bookmarks bar
             });
             folderId = newFolder.id;
           } else {
-            folderId = folders[0].id;
+            // If folder exists but is not in bookmarks bar, move it there
+            const folder = folders[0];
+            if (folder.parentId !== "1") {
+              console.log('Moving wishlist folder to bookmarks bar...');
+              await chrome.bookmarks.move(folder.id, { parentId: "1" });
+            }
+            folderId = folder.id;
           }
 
           console.log('Fetching bookmarks from folder:', folderId);
