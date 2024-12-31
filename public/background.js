@@ -117,11 +117,16 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
       // Open the side panel and show success message
       try {
+        // First set the options
         await chrome.sidePanel.setOptions({
           enabled: true,
           path: "index.html?status=added&title=" + encodeURIComponent(result.title)
         });
-        await chrome.sidePanel.open();
+        
+        // Then open the panel without any parameters
+        if (chrome.sidePanel && typeof chrome.sidePanel.open === 'function') {
+          await chrome.sidePanel.open({});
+        }
       } catch (error) {
         console.error('Error opening side panel:', error);
       }
@@ -139,7 +144,10 @@ chrome.action.onClicked.addListener(async () => {
       enabled: true,
       path: "index.html"
     });
-    await chrome.sidePanel.open();
+    
+    if (chrome.sidePanel && typeof chrome.sidePanel.open === 'function') {
+      await chrome.sidePanel.open({});
+    }
   } catch (error) {
     console.error('Error opening side panel:', error);
   }
