@@ -115,22 +115,21 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         url: result.url
       });
 
-      // Open the side panel and show success message
-      try {
-        const extensionUrl = chrome.runtime.getURL('index.html');
-        // First set the options
-        await chrome.sidePanel.setOptions({
-          enabled: true,
-          path: `index.html?status=added&title=${encodeURIComponent(result.title)}`
-        });
-        
-        // Then open the panel without any parameters
-        if (chrome.sidePanel && typeof chrome.sidePanel.open === 'function') {
-          await chrome.sidePanel.open({});
-        }
-      } catch (error) {
-        console.error('Error opening side panel:', error);
-      }
+      // Set up the side panel options first
+      await chrome.sidePanel.setOptions({
+        enabled: true,
+        path: `index.html?status=added&title=${encodeURIComponent(result.title)}`
+      });
+
+      // Instead of trying to open the panel programmatically,
+      // we'll update the extension action badge to notify the user
+      chrome.action.setBadgeText({ text: "New" });
+      chrome.action.setBadgeBackgroundColor({ color: "#4CAF50" });
+      
+      // Clear the badge after 5 seconds
+      setTimeout(() => {
+        chrome.action.setBadgeText({ text: "" });
+      }, 5000);
 
     } catch (error) {
       console.error('Error adding item to wishlist:', error);
@@ -138,15 +137,15 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 });
 
-// Open side panel when extension icon is clicked
+// Open side panel when extension icon is clicked (this is a user gesture)
 chrome.action.onClicked.addListener(async () => {
   try {
-    const extensionUrl = chrome.runtime.getURL('index.html');
     await chrome.sidePanel.setOptions({
       enabled: true,
       path: 'index.html'
     });
     
+    // This is okay because it's in response to a user click
     if (chrome.sidePanel && typeof chrome.sidePanel.open === 'function') {
       await chrome.sidePanel.open({});
     }
