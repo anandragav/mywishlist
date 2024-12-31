@@ -15,18 +15,9 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.action.onClicked.addListener(async () => {
   try {
     const url = chrome.runtime.getURL('index.html');
-    if (chrome.sidePanel) {
-      await chrome.sidePanel.open({ url });
-    } else {
-      await chrome.windows.create({
-        url,
-        type: 'popup',
-        width: 400,
-        height: 600
-      });
-    }
+    await chrome.tabs.create({ url });
   } catch (error) {
-    console.error('Error opening side panel:', error);
+    console.error('Error opening wishlist:', error);
   }
 });
 
@@ -77,20 +68,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
       await addToWishlist(result.productInfo);
 
-      // Open side panel with success message
+      // Open wishlist in new tab with success message
       const url = chrome.runtime.getURL('index.html') + 
                   `?status=added&title=${encodeURIComponent(result.productInfo.title)}`;
       
-      if (chrome.sidePanel) {
-        await chrome.sidePanel.open({ url });
-      } else {
-        await chrome.windows.create({
-          url,
-          type: 'popup',
-          width: 400,
-          height: 600
-        });
-      }
+      await chrome.tabs.create({ url });
     } catch (error) {
       console.error('Error adding to wishlist:', error);
     }
