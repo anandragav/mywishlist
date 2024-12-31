@@ -67,10 +67,12 @@ export const useWishlist = () => {
           const wishlistItems = bookmarks.map(bookmark => {
             try {
               const titleData = JSON.parse(bookmark.title);
+              // Ensure URL is properly formatted
+              const url = bookmark.url ? new URL(bookmark.url).toString() : '';
               return {
                 id: bookmark.id,
                 title: titleData.title || bookmark.title,
-                url: bookmark.url || '',
+                url,
                 imageUrl: titleData.imageUrl || '',
                 price: titleData.price || '',
                 vendor: titleData.vendor || '',
@@ -78,10 +80,12 @@ export const useWishlist = () => {
               };
             } catch (e) {
               console.log('Error parsing bookmark data:', e);
+              // Ensure URL is properly formatted even for fallback case
+              const url = bookmark.url ? new URL(bookmark.url).toString() : '';
               return {
                 id: bookmark.id,
                 title: bookmark.title,
-                url: bookmark.url || '',
+                url,
                 dateAdded: bookmark.dateAdded || Date.now(),
               };
             }
