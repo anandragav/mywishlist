@@ -13,6 +13,7 @@ chrome.runtime.onInstalled.addListener(() => {
 // Handle extension icon clicks
 chrome.action.onClicked.addListener(() => {
   const url = chrome.runtime.getURL('index.html');
+  console.log('Opening extension at URL:', url);
   chrome.tabs.create({ url });
 });
 
@@ -26,12 +27,14 @@ async function isProductPage(tabId) {
       return false;
     }
 
-    const [{ result }] = await chrome.scripting.executeScript({
+    // Execute content script to check for product page indicators
+    const results = await chrome.scripting.executeScript({
       target: { tabId },
       func: extractProductInfo
     });
 
-    return result.isProductPage;
+    console.log('Product page check results:', results);
+    return results && results[0] && results[0].result && results[0].result.isProductPage;
   } catch (error) {
     console.error('Error checking if product page:', error);
     return false;
@@ -43,7 +46,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') {
     try {
       const isProduct = await isProductPage(tabId);
-      await chrome.contextMenus.update("addToWishlist", {
+      console.log('Tab updated, is product page:', isProduct);
+      chrome.contextMenus.update("addToWishlist", {
         visible: isProduct
       });
     } catch (error) {
@@ -56,17 +60,23 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === "addToWishlist" && tab?.id) {
     try {
-      const [{ result }] = await chrome.scripting.executeScript({
+      console.log('Context menu clicked, extracting product info...');
+      const results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: extractProductInfo
       });
 
-      await addToWishlist(result.productInfo);
+      if (results && results[0] && results[0].result) {
+        const productInfo = results[0].result.productInfo;
+        console.log('Product info extracted:', productInfo);
+        
+        await addToWishlist(productInfo);
 
-      // Open wishlist in new tab with success message
-      const url = chrome.runtime.getURL('index.html') + 
-        `?status=added&title=${encodeURIComponent(result.productInfo.title)}`;
-      chrome.tabs.create({ url });
+        const baseUrl = chrome.runtime.getURL('index.html');
+        const url = `${baseUrl}?status=added&title=${encodeURIComponent(productInfo.title)}`;
+        console.log('Opening wishlist at URL:', url);
+        chrome.tabs.create({ url });
+      }
     } catch (error) {
       console.error('Error adding to wishlist:', error);
     }
